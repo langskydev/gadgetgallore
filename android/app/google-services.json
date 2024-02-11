@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916691300216",
+    "project_id": "gadgetgallore-46198",
+    "storage_bucket": "gadgetgallore-46198.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916691300216:android:1e7ed5089b3b001a54a28d",
+        "android_client_info": {
+          "package_name": "com.example.gadgetgallore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcwHSbF43VAUTMupD7WbTrs0hta7H8B_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
