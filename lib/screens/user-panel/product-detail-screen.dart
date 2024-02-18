@@ -1,12 +1,16 @@
-// ignore_for_file: file_names, must_be_immutable, avoid_unnecessary_containers, prefer_const_constructors, prefer_interpolation_to_compose_strings
+// ignore_for_file: file_names, must_be_immutable, avoid_unnecessary_containers, prefer_const_constructors, prefer_interpolation_to_compose_strings, unused_local_variable
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gadgetgallore/models/cart-model.dart';
 import 'package:gadgetgallore/models/product-model.dart';
 import 'package:gadgetgallore/utils/app-constant.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   ProductModel productModel;
@@ -17,6 +21,7 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  User? user = FirebaseAuth.instance.currentUser;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +90,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                         alignment: Alignment.topLeft,
-                        child: Text("Rp. " + widget.productModel.fullPrice)),
+                        child: Text(NumberFormat.currency(locale: 'id', decimalDigits: 0).format(double.parse(widget.productModel.fullPrice))),
+                        ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -141,8 +147,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   style: TextStyle(
                                       color: AppConstant.appTextColor),
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   // Get.to(() => SignIn());
+
+                                  await checkProductExistence(uId: user!.uid);
                                 },
                               ),
                             ),
@@ -156,5 +164,60 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ]),
       ),
     );
+  }
+
+  // check product exist or not
+  Future<void> checkProductExistence({
+    required String uId,
+    int quantityIncrement = 1,
+  }) async {
+    final DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('cart')
+        .doc(uId)
+        .collection('cartOrders')
+        .doc(widget.productModel.productId.toString());
+
+    DocumentSnapshot snapshot = await documentReference.get();
+
+    if (snapshot.exists) {
+      int currentQuantity = snapshot['productQuantity'];
+      int updatedQuantity = currentQuantity + quantityIncrement;
+      double totalPrice =
+          double.parse(widget.productModel.fullPrice) * updatedQuantity;
+
+      await documentReference.update({
+        'productQuantity': updatedQuantity,
+        'productTotalPrice': totalPrice
+      });
+
+       print("Product exists");
+    } else {
+      await FirebaseFirestore.instance.collection('cart').doc(uId).set(
+        {
+          'uId': uId,
+          'createdAt': DateTime.now(),
+        },
+      );
+
+      CartModel cartModel = CartModel(
+          productId: widget.productModel.productId,
+          categoryId: widget.productModel.categoryId,
+          productName: widget.productModel.productName,
+          categoryName: widget.productModel.categoryName,
+          salePrice: widget.productModel.salePrice,
+          fullPrice: widget.productModel.fullPrice,
+          productImages: widget.productModel.productImages,
+          deliveryTime: widget.productModel.deliveryTime,
+          isSale: widget.productModel.isSale,
+          productDescription: widget.productModel.productDescription,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          productQuantity: 1,
+          productTotalPrice: double.parse(widget.productModel.fullPrice));
+
+      await documentReference.set(cartModel.toMap());
+
+      print("Product Added");
+    }
   }
 }

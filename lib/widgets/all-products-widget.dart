@@ -7,6 +7,7 @@ import 'package:gadgetgallore/screens/user-panel/product-detail-screen.dart';
 import 'package:get/get.dart';
 import 'package:image_card/image_card.dart';
 import 'package:gadgetgallore/models/product-model.dart';
+import 'package:intl/intl.dart';
 
 class AllProductWidget extends StatelessWidget {
   const AllProductWidget({super.key});
@@ -91,7 +92,8 @@ class AllProductWidget extends StatelessWidget {
                               style: TextStyle(fontSize: 12.0),
                             ),
                           ),
-                          footer: Text("Rp. " + productModel.fullPrice),
+                          footer: Text(NumberFormat.currency(locale: 'id', decimalDigits: 0).format(double.parse(productModel.fullPrice))),
+
                         ),
                       ),
                     ),
