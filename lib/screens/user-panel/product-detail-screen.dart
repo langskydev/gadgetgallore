@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gadgetgallore/models/cart-model.dart';
 import 'package:gadgetgallore/models/product-model.dart';
+import 'package:gadgetgallore/screens/user-panel/cart-screen.dart';
 import 'package:gadgetgallore/utils/app-constant.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -26,8 +27,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: AppConstant.appTextColor),
         backgroundColor: AppConstant.appScondaryColor,
-        title: const Text("product Details"),
+        title: const Text("product Details", style: TextStyle(color: AppConstant.appTextColor),),
+        actions: [
+          GestureDetector(
+            onTap: () => Get.to(() => CartScreen()),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.shopping_cart),
+            ),
+          )
+        ],
       ),
       body: Container(
         child: Column(children: [
@@ -89,9 +100,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
-                        alignment: Alignment.topLeft,
-                        child: Text(NumberFormat.currency(locale: 'id', decimalDigits: 0).format(double.parse(widget.productModel.fullPrice))),
-                        ),
+                      alignment: Alignment.topLeft,
+                      child: Text(NumberFormat.currency(
+                              locale: 'id', decimalDigits: 0)
+                          .format(double.parse(widget.productModel.fullPrice))),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -182,15 +195,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (snapshot.exists) {
       int currentQuantity = snapshot['productQuantity'];
       int updatedQuantity = currentQuantity + quantityIncrement;
-      double totalPrice =
-          double.parse(widget.productModel.fullPrice) * updatedQuantity;
+      double totalPrice = double.parse(widget.productModel.isSale
+              ? widget.productModel.salePrice
+              : widget.productModel.fullPrice) *
+          updatedQuantity;
 
       await documentReference.update({
         'productQuantity': updatedQuantity,
         'productTotalPrice': totalPrice
       });
 
-       print("Product exists");
+      print("Product exists");
     } else {
       await FirebaseFirestore.instance.collection('cart').doc(uId).set(
         {
@@ -213,7 +228,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           productQuantity: 1,
-          productTotalPrice: double.parse(widget.productModel.fullPrice));
+          productTotalPrice: double.parse(widget.productModel.isSale
+              ? widget.productModel.salePrice
+              : widget.productModel.fullPrice));
 
       await documentReference.set(cartModel.toMap());
 

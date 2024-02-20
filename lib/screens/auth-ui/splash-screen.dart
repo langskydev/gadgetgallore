@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, unused_local_variable
+// ignore_for_file: file_names, unused_local_variable, prefer_const_constructors
 
 import 'dart:async';
 
@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
        final GetUserDataController getUserDataController = Get.put(GetUserDataController());
        var userData= await getUserDataController.getUserData(user!.uid);
 
-       if(userData[0]['isAdmin'] == true){
+       if (userData.isNotEmpty && userData[0]['isAdmin'] == true){
         Get.offAll(()=> AdminMainScreen());
        }else{
         Get.offAll(() => MainScreen());
